@@ -59,6 +59,41 @@ export interface CommissionRecord {
   createdAt: string;
 }
 
+export type PlayerLifecycleState =
+  | "appena_registrato"
+  | "non_convertito"
+  | "solo_primo_deposito"
+  | "nuovo"
+  | "non_attivato"
+  | "in_consolidamento"
+  | "attivo"
+  | "in_flessione"
+  | "rischio_churn"
+  | "dormiente"
+  | "perso"
+  | "riattivato";
+
+export interface ReferredPlayerItem {
+  id: string;
+  playerId: string;
+  registeredAt: string;
+  lifecycleState: PlayerLifecycleState;
+  suppressed: boolean;
+  totalDeposits: string;
+  totalNgr: string;
+  lastActivityAt: string | null;
+}
+
+export interface AffiliateNetworkSummary {
+  affiliateId: string;
+  affiliateName: string;
+  affiliateEmail: string;
+  totalPlayers: number;
+  totalDeposits: number;
+  totalNgr: number;
+  byState: Partial<Record<PlayerLifecycleState, number>>;
+}
+
 export interface AffiliateLinkItem {
   id: string;
   slug: string;
