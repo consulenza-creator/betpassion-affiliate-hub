@@ -1,15 +1,15 @@
 import { Card } from "../ui/Card";
 import { Badge } from "../ui/Badge";
-import { TOP_LINKS, LATEST_COMMISSIONS } from "../../data/mockDashboard";
+import type { CommissionEntry, TopLink } from "../../types";
 
-const STATUS_TONE = { paid: "green", approved: "neutral", pending: "warning" } as const;
+const STATUS_TONE = { paid: "green", approved: "neutral", pending: "warning", rejected: "warning" } as const;
 
-export function TopLinksWidget() {
+export function TopLinksWidget({ links }: { links: TopLink[] }) {
   return (
     <Card>
       <h3 className="text-sm font-medium mb-4">Top link</h3>
       <div className="space-y-3">
-        {TOP_LINKS.map((link) => (
+        {links.map((link) => (
           <div key={link.id} className="flex items-center justify-between text-sm">
             <span className="text-text-primary truncate mr-2">{link.name}</span>
             <span className="text-text-muted whitespace-nowrap">{link.clicks.toLocaleString("it-IT")} click</span>
@@ -20,12 +20,12 @@ export function TopLinksWidget() {
   );
 }
 
-export function LatestCommissionsWidget() {
+export function LatestCommissionsWidget({ commissions }: { commissions: CommissionEntry[] }) {
   return (
     <Card>
       <h3 className="text-sm font-medium mb-4">Ultime commissioni</h3>
       <div className="space-y-3">
-        {LATEST_COMMISSIONS.map((c) => (
+        {commissions.map((c) => (
           <div key={c.id} className="flex items-center justify-between text-sm">
             <div className="min-w-0">
               <div className="truncate">{c.affiliateName}</div>

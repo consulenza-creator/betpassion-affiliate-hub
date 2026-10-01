@@ -20,7 +20,7 @@ export interface CommissionEntry {
   amount: number;
   currency: "EUR";
   date: string;
-  status: "pending" | "approved" | "paid";
+  status: "pending" | "approved" | "paid" | "rejected";
 }
 
 export interface KpiCard {
@@ -29,6 +29,45 @@ export interface KpiCard {
   value: string;
   deltaPct: number;
   trend: "up" | "down" | "flat";
+}
+
+export interface PerformancePoint {
+  period: string;
+  clicks: number;
+  commission: number;
+}
+
+export interface TopLink {
+  id: string;
+  name: string;
+  clicks: number;
+}
+
+export interface DashboardSummary {
+  kpis: KpiCard[];
+  performanceSeries: PerformancePoint[];
+  topLinks: TopLink[];
+  latestCommissions: CommissionEntry[];
+}
+
+export interface CommissionRecord {
+  id: string;
+  type: CommissionType;
+  amount: string;
+  currency: string;
+  status: "pending" | "approved" | "paid" | "rejected";
+  createdAt: string;
+}
+
+export interface AffiliateLinkItem {
+  id: string;
+  slug: string;
+  campaignName: string;
+  targetUrl: string;
+  active: boolean;
+  createdAt: string;
+  shortUrl: string;
+  clickCount: number;
 }
 
 export type AssetType = "banner" | "landing_page" | "video" | "logo" | "social_creative";

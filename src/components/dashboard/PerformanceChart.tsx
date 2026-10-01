@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Card } from "../ui/Card";
-import { PERFORMANCE_SERIES } from "../../data/mockDashboard";
+import type { PerformancePoint } from "../../types";
 
 const PERIODS = [
   { id: "6m", label: "6 mesi" },
@@ -9,11 +9,10 @@ const PERIODS = [
   { id: "1m", label: "1 mese" },
 ] as const;
 
-export function PerformanceChart() {
+export function PerformanceChart({ data }: { data: PerformancePoint[] }) {
   const [period, setPeriod] = useState<(typeof PERIODS)[number]["id"]>("6m");
 
-  const slice =
-    period === "6m" ? PERFORMANCE_SERIES : period === "3m" ? PERFORMANCE_SERIES.slice(-3) : PERFORMANCE_SERIES.slice(-1);
+  const slice = period === "6m" ? data : period === "3m" ? data.slice(-3) : data.slice(-1);
 
   return (
     <Card className="col-span-2">
