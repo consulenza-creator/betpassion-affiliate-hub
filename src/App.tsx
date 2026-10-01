@@ -1,6 +1,8 @@
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { AppLayout } from "./components/layout/AppLayout";
+import { ProtectedRoute } from "./components/layout/ProtectedRoute";
+import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { LinksTracking } from "./pages/LinksTracking";
 import { Commissions } from "./pages/Commissions";
@@ -18,7 +20,14 @@ export default function App() {
     <AuthProvider>
       <HashRouter>
         <Routes>
-          <Route element={<AppLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route path="/" element={<Dashboard />} />
             <Route path="/links" element={<LinksTracking />} />
             <Route path="/commissions" element={<Commissions />} />

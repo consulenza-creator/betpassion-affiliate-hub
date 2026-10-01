@@ -30,7 +30,7 @@ export function MarketingCenter() {
         </p>
       </div>
 
-      {currentUser.role === "super_admin" && <AdminUploadForm />}
+      {currentUser?.role === "super_admin" && <AdminUploadForm />}
 
       <LibraryFiltersBar
         activeType={activeType}

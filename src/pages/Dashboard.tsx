@@ -11,7 +11,7 @@ export function Dashboard() {
     <div className="space-y-6">
       {/* Hero */}
       <div>
-        <h1 className="text-xl font-semibold">Bentornato, {currentUser.name.split(" ")[0]}</h1>
+        <h1 className="text-xl font-semibold">Bentornato, {currentUser?.name.split(" ")[0]}</h1>
         <p className="text-sm text-text-muted mt-1">Ecco il riepilogo della tua rete affiliati oggi.</p>
       </div>
 

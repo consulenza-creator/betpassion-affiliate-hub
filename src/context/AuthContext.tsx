@@ -1,27 +1,73 @@
-import { createContext, useContext, useState, ReactNode } from "react";
-import type { CurrentUser, UserRole } from "../types";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import type { CurrentUser } from "../types";
+import { api, setToken, clearToken, getToken, ApiError } from "../lib/api";
 
-const MOCK_USERS: Record<UserRole, CurrentUser> = {
-  super_admin: { id: "u1", name: "Valerio Conti", role: "super_admin", avatarInitials: "VC" },
-  affiliate_manager: { id: "u2", name: "Giulia Bianchi", role: "affiliate_manager", avatarInitials: "GB" },
-  master_affiliate: { id: "u3", name: "Marco Russo", role: "master_affiliate", avatarInitials: "MR" },
-  affiliate_standard: { id: "u4", name: "Anna Ferrari", role: "affiliate_standard", avatarInitials: "AF" },
-};
+interface LoginResponse {
+  accessToken: string;
+  user: { id: string; name: string; email: string; role: CurrentUser["role"] };
+}
 
 interface AuthContextValue {
-  currentUser: CurrentUser;
-  setRole: (role: UserRole) => void;
+  currentUser: CurrentUser | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [role, setRoleState] = useState<UserRole>("affiliate_standard");
+function initialsFromName(name: string): string {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
 
-  const setRole = (newRole: UserRole) => setRoleState(newRole);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Al primo caricamento, se c'e' gia' un token salvato prova a ripristinare la
+  // sessione chiamando /auth/me, cosi' l'utente non deve rifare login ad ogni refresh.
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    api
+      .get<LoginResponse["user"] | null>("/auth/me")
+      .then((user) => {
+        if (user) {
+          setCurrentUser({ id: user.id, name: user.name, role: user.role, avatarInitials: initialsFromName(user.name) });
+        } else {
+          clearToken();
+        }
+      })
+      .catch(() => clearToken())
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function login(email: string, password: string) {
+    const data = await api.post<LoginResponse>("/auth/login", { email, password });
+    setToken(data.accessToken);
+    setCurrentUser({
+      id: data.user.id,
+      name: data.user.name,
+      role: data.user.role,
+      avatarInitials: initialsFromName(data.user.name),
+    });
+  }
+
+  function logout() {
+    clearToken();
+    setCurrentUser(null);
+  }
 
   return (
-    <AuthContext.Provider value={{ currentUser: MOCK_USERS[role], setRole }}>
+    <AuthContext.Provider value={{ currentUser, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -33,7 +79,9 @@ export function useAuth() {
   return ctx;
 }
 
-export const ROLE_LABELS: Record<UserRole, string> = {
+export { ApiError };
+
+export const ROLE_LABELS: Record<CurrentUser["role"], string> = {
   super_admin: "Super Admin",
   affiliate_manager: "Affiliate Manager",
   master_affiliate: "Master Affiliate",
