@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { useAuth } from "../context/AuthContext";
-import { fetchMyReferredPlayers, fetchNetworkOverview, fetchAffiliateDetail } from "../lib/network";
+import { fetchNetworkOverview, fetchPartnerPlayers } from "../lib/network";
 import type { AffiliateNetworkSummary, PlayerLifecycleState, ReferredPlayerItem } from "../types";
 
 const STATE_LABELS: Record<PlayerLifecycleState, string> = {
@@ -82,7 +82,7 @@ function PlayersTable({ players }: { players: ReferredPlayerItem[] }) {
   );
 }
 
-function NetworkOverviewView() {
+function NetworkOverviewView({ emptyMessage }: { emptyMessage: string }) {
   const [overview, setOverview] = useState<AffiliateNetworkSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -97,17 +97,17 @@ function NetworkOverviewView() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function toggleExpand(affiliateId: string) {
-    if (expandedId === affiliateId) {
+  async function toggleExpand(partnerId: string) {
+    if (expandedId === partnerId) {
       setExpandedId(null);
       setDetail(null);
       return;
     }
-    setExpandedId(affiliateId);
+    setExpandedId(partnerId);
     setDetail(null);
     setDetailLoading(true);
     try {
-      const players = await fetchAffiliateDetail(affiliateId);
+      const players = await fetchPartnerPlayers(partnerId);
       setDetail(players);
     } catch {
       setError("Impossibile caricare il dettaglio del partner.");
@@ -118,19 +118,18 @@ function NetworkOverviewView() {
 
   if (error) return <p className="text-sm text-red-400">{error}</p>;
   if (loading) return <p className="text-sm text-text-muted">Caricamento...</p>;
-  if (overview.length === 0) return <p className="text-sm text-text-muted">Nessun giocatore referred ancora registrato.</p>;
+  if (overview.length === 0) return <p className="text-sm text-text-muted">{emptyMessage}</p>;
 
   return (
     <div className="space-y-3">
       {overview.map((partner) => (
-        <Card key={partner.affiliateId}>
+        <Card key={partner.partnerId}>
           <button
-            onClick={() => toggleExpand(partner.affiliateId)}
+            onClick={() => toggleExpand(partner.partnerId)}
             className="w-full flex flex-wrap items-center justify-between gap-3 text-left"
           >
             <div>
-              <div className="text-sm font-medium">{partner.affiliateName}</div>
-              <div className="text-xs text-text-muted">{partner.affiliateEmail}</div>
+              <div className="text-sm font-medium">{partner.partnerName}</div>
             </div>
             <div className="flex flex-wrap gap-4 items-center text-sm">
               <div>
@@ -156,7 +155,7 @@ function NetworkOverviewView() {
             ))}
           </div>
 
-          {expandedId === partner.affiliateId && (
+          {expandedId === partner.partnerId && (
             <div className="mt-4 pt-4 border-t border-surface-border">
               {detailLoading ? (
                 <p className="text-sm text-text-muted">Caricamento dettaglio...</p>
@@ -167,48 +166,6 @@ function NetworkOverviewView() {
           )}
         </Card>
       ))}
-    </div>
-  );
-}
-
-function MyPlayersView() {
-  const [players, setPlayers] = useState<ReferredPlayerItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchMyReferredPlayers()
-      .then(setPlayers)
-      .catch(() => setError("Impossibile caricare i tuoi giocatori."))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const totalDeposits = players.reduce((sum, p) => sum + Number(p.totalDeposits), 0);
-  const totalNgr = players.reduce((sum, p) => sum + Number(p.totalNgr), 0);
-
-  return (
-    <div className="space-y-4">
-      {error && <p className="text-sm text-red-400">{error}</p>}
-
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <div className="text-xs text-text-muted mb-2">Giocatori portati</div>
-          <div className="text-2xl font-semibold">{players.length}</div>
-        </Card>
-        <Card>
-          <div className="text-xs text-text-muted mb-2">Depositi totali</div>
-          <div className="text-2xl font-semibold">{formatEur(totalDeposits)}</div>
-        </Card>
-        <Card>
-          <div className="text-xs text-text-muted mb-2">NGR totale</div>
-          <div className="text-2xl font-semibold">{formatEur(totalNgr)}</div>
-        </Card>
-      </div>
-
-      <Card>
-        <h3 className="text-sm font-medium mb-4">I tuoi giocatori</h3>
-        {loading ? <p className="text-sm text-text-muted">Caricamento...</p> : <PlayersTable players={players} />}
-      </Card>
     </div>
   );
 }
@@ -224,11 +181,17 @@ export function Network() {
         <p className="text-sm text-text-muted mt-1">
           {isManagement
             ? "Per ciascun partner, quanti utenti ha portato e in che stato sono. Nessun dato identificativo del giocatore."
-            : "I giocatori che hai portato e il loro stato nel ciclo di vita."}
+            : "I giocatori dei partner assegnati al tuo account e il loro stato nel ciclo di vita. Nessun dato identificativo del giocatore."}
         </p>
       </div>
 
-      {isManagement ? <NetworkOverviewView /> : <MyPlayersView />}
+      <NetworkOverviewView
+        emptyMessage={
+          isManagement
+            ? "Nessun giocatore ancora registrato."
+            : "Nessun dato disponibile: al tuo account non risulta ancora assegnato nessun partner con giocatori."
+        }
+      />
     </div>
   );
 }

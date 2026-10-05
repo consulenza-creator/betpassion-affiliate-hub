@@ -1,13 +1,18 @@
 import { useState, FormEvent } from "react";
+import { Navigate } from "react-router-dom";
 import { useAuth, ApiError } from "../context/AuthContext";
 import { Card } from "../components/ui/Card";
 
 export function Login() {
-  const { login } = useAuth();
+  const { currentUser, login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Gia' autenticato (anche subito dopo il login): si va alla home, dove ProtectedRoute
+  // decide se serve prima il cambio password obbligatorio.
+  if (currentUser) return <Navigate to="/" replace />;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();

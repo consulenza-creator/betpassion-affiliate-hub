@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import {
   LayoutDashboard,
   Link2,
@@ -13,7 +14,7 @@ import {
   LifeBuoy,
 } from "lucide-react";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: { to: string; label: string; icon: typeof LayoutDashboard; adminOnly?: boolean }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/links", label: "Link & Tracking", icon: Link2 },
   { to: "/commissions", label: "Commissioni", icon: Wallet },
@@ -21,13 +22,16 @@ const NAV_ITEMS = [
   { to: "/network", label: "Rete Affiliati", icon: Network },
   { to: "/reports", label: "Report & Analytics", icon: BarChart3 },
   { to: "/payouts", label: "Pagamenti", icon: FileText },
-  { to: "/team", label: "Gestione Team", icon: Users },
+  { to: "/team", label: "Gestione Team", icon: Users, adminOnly: true },
   { to: "/notifications", label: "Notifiche", icon: Bell },
   { to: "/support", label: "Assistenza", icon: LifeBuoy },
   { to: "/settings", label: "Impostazioni", icon: Settings },
 ];
 
 export function Sidebar() {
+  const { currentUser } = useAuth();
+  const items = NAV_ITEMS.filter((item) => !item.adminOnly || currentUser?.role === "super_admin");
+
   return (
     <aside className="w-[260px] shrink-0 bg-surface-sidebar border-r border-surface-border flex flex-col">
       <div className="h-16 flex items-center px-6 border-b border-surface-border">
@@ -39,7 +43,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 py-4 overflow-y-auto">
-        {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+        {items.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}

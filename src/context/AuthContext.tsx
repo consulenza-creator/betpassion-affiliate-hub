@@ -2,9 +2,17 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import type { CurrentUser } from "../types";
 import { api, setToken, clearToken, getToken, ApiError } from "../lib/api";
 
+interface BackendUser {
+  id: string;
+  name: string;
+  email: string;
+  role: CurrentUser["role"];
+  mustChangePassword: boolean;
+}
+
 interface LoginResponse {
   accessToken: string;
-  user: { id: string; name: string; email: string; role: CurrentUser["role"] };
+  user: BackendUser;
 }
 
 interface AuthContextValue {
@@ -12,6 +20,7 @@ interface AuthContextValue {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -23,6 +32,16 @@ function initialsFromName(name: string): string {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
+}
+
+function toCurrentUser(user: BackendUser): CurrentUser {
+  return {
+    id: user.id,
+    name: user.name,
+    role: user.role,
+    avatarInitials: initialsFromName(user.name),
+    mustChangePassword: user.mustChangePassword,
+  };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -38,10 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     api
-      .get<LoginResponse["user"] | null>("/auth/me")
+      .get<BackendUser | null>("/auth/me")
       .then((user) => {
         if (user) {
-          setCurrentUser({ id: user.id, name: user.name, role: user.role, avatarInitials: initialsFromName(user.name) });
+          setCurrentUser(toCurrentUser(user));
         } else {
           clearToken();
         }
@@ -53,12 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function login(email: string, password: string) {
     const data = await api.post<LoginResponse>("/auth/login", { email, password });
     setToken(data.accessToken);
-    setCurrentUser({
-      id: data.user.id,
-      name: data.user.name,
-      role: data.user.role,
-      avatarInitials: initialsFromName(data.user.name),
-    });
+    setCurrentUser(toCurrentUser(data.user));
   }
 
   function logout() {
@@ -66,8 +80,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCurrentUser(null);
   }
 
+  async function changePassword(currentPassword: string, newPassword: string) {
+    await api.post("/auth/change-password", { currentPassword, newPassword });
+    setCurrentUser((u) => (u ? { ...u, mustChangePassword: false } : u));
+  }
+
   return (
-    <AuthContext.Provider value={{ currentUser, loading, login, logout }}>
+    <AuthContext.Provider value={{ currentUser, loading, login, logout, changePassword }}>
       {children}
     </AuthContext.Provider>
   );

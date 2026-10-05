@@ -17,5 +17,10 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
+  // Account creato dall'admin con password temporanea: va cambiata prima di usare l'app
+  if (currentUser.mustChangePassword) {
+    return <Navigate to="/change-password" replace />;
+  }
+
   return <>{children}</>;
 }

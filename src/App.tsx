@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { AppLayout } from "./components/layout/AppLayout";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { Login } from "./pages/Login";
+import { ChangePassword } from "./pages/ChangePassword";
 import { Dashboard } from "./pages/Dashboard";
 import { LinksTracking } from "./pages/LinksTracking";
 import { Commissions } from "./pages/Commissions";
@@ -21,6 +22,7 @@ export default function App() {
       <HashRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/change-password" element={<ChangePassword />} />
           <Route
             element={
               <ProtectedRoute>

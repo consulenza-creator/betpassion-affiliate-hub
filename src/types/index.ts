@@ -9,6 +9,7 @@ export interface CurrentUser {
   name: string;
   role: UserRole;
   avatarInitials: string;
+  mustChangePassword: boolean;
 }
 
 export type CommissionType = "cpa" | "revshare" | "hybrid" | "manual_bonus" | "network_override";
@@ -85,13 +86,29 @@ export interface ReferredPlayerItem {
 }
 
 export interface AffiliateNetworkSummary {
-  affiliateId: string;
-  affiliateName: string;
-  affiliateEmail: string;
+  partnerId: string;
+  partnerName: string;
   totalPlayers: number;
   totalDeposits: number;
   totalNgr: number;
   byState: Partial<Record<PlayerLifecycleState, number>>;
+}
+
+export interface AdminPartner {
+  id: string;
+  name: string;
+  playerCount: number;
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  active: boolean;
+  mustChangePassword: boolean;
+  createdAt: string;
+  partners: { id: string; name: string }[];
 }
 
 export interface AffiliateLinkItem {
