@@ -12,6 +12,8 @@ import { Network } from "./pages/Network";
 import { Reports } from "./pages/Reports";
 import { Payouts } from "./pages/Payouts";
 import { TeamManagement } from "./pages/TeamManagement";
+import { DataFeed } from "./pages/DataFeed";
+import { Deals } from "./pages/Deals";
 import { Notifications } from "./pages/Notifications";
 import { Support } from "./pages/Support";
 import { Settings } from "./pages/Settings";
@@ -38,6 +40,8 @@ export default function App() {
             <Route path="/reports" element={<Reports />} />
             <Route path="/payouts" element={<Payouts />} />
             <Route path="/team" element={<TeamManagement />} />
+            <Route path="/data" element={<DataFeed />} />
+            <Route path="/deals" element={<Deals />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/support" element={<Support />} />
             <Route path="/settings" element={<Settings />} />

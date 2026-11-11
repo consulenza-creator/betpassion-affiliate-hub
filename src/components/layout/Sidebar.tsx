@@ -12,6 +12,8 @@ import {
   Network,
   Bell,
   LifeBuoy,
+  Database,
+  Percent,
 } from "lucide-react";
 
 const NAV_ITEMS: { to: string; label: string; icon: typeof LayoutDashboard; adminOnly?: boolean }[] = [
@@ -23,6 +25,8 @@ const NAV_ITEMS: { to: string; label: string; icon: typeof LayoutDashboard; admi
   { to: "/reports", label: "Report & Analytics", icon: BarChart3 },
   { to: "/payouts", label: "Pagamenti", icon: FileText },
   { to: "/team", label: "Gestione Team", icon: Users, adminOnly: true },
+  { to: "/deals", label: "Accordi", icon: Percent, adminOnly: true },
+  { to: "/data", label: "Dati & Import", icon: Database, adminOnly: true },
   { to: "/notifications", label: "Notifiche", icon: Bell },
   { to: "/support", label: "Assistenza", icon: LifeBuoy },
   { to: "/settings", label: "Impostazioni", icon: Settings },

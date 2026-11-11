@@ -45,8 +45,8 @@ export function PerformanceChart({ data }: { data: PerformancePoint[] }) {
               contentStyle={{ background: "#1b1d24", border: "1px solid #262832", borderRadius: 8 }}
               labelStyle={{ color: "#f3f4f6" }}
             />
-            <Line type="monotone" dataKey="commission" stroke="#50AE3A" strokeWidth={2} dot={false} name="Commissioni (€)" />
-            <Line type="monotone" dataKey="clicks" stroke="#989898" strokeWidth={2} dot={false} name="Click" />
+            <Line type="monotone" dataKey="deposits" stroke="#50AE3A" strokeWidth={2} dot={false} name="Depositi (€)" />
+            <Line type="monotone" dataKey="ggr" stroke="#989898" strokeWidth={2} dot={false} name="GGR (€)" />
           </LineChart>
         </ResponsiveContainer>
       </div>

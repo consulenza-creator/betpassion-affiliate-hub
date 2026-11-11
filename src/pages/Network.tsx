@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { useAuth } from "../context/AuthContext";
@@ -18,6 +18,7 @@ const STATE_LABELS: Record<PlayerLifecycleState, string> = {
   dormiente: "Dormiente",
   perso: "Perso",
   riattivato: "Riattivato",
+  non_classificabile: "Non classificabile",
 };
 
 const STATE_TONE: Record<PlayerLifecycleState, "green" | "neutral" | "warning"> = {
@@ -33,51 +34,112 @@ const STATE_TONE: Record<PlayerLifecycleState, "green" | "neutral" | "warning"> 
   rischio_churn: "warning",
   dormiente: "warning",
   perso: "warning",
+  non_classificabile: "neutral",
 };
 
 function formatEur(n: number): string {
   return `€ ${n.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
+const PAGE_SIZE = 50;
+
 function PlayersTable({ players }: { players: ReferredPlayerItem[] }) {
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(0);
+
+  // Ricerca per username o nickname: serve all'affiliato per verificare le proprie iscrizioni
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return players;
+    return players.filter(
+      (p) => (p.username ?? "").toLowerCase().includes(q) || (p.nickname ?? "").toLowerCase().includes(q),
+    );
+  }, [players, query]);
+
   if (players.length === 0) {
     return <p className="text-sm text-text-muted">Nessun giocatore trovato.</p>;
   }
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const current = Math.min(page, pages - 1);
+  const visible = filtered.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE);
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-xs text-text-muted border-b border-surface-border">
-            <th className="pb-2 pr-4 font-medium">ID giocatore</th>
-            <th className="pb-2 pr-4 font-medium">Stato</th>
-            <th className="pb-2 pr-4 font-medium">Depositi</th>
-            <th className="pb-2 pr-4 font-medium">NGR</th>
-            <th className="pb-2 pr-4 font-medium">Registrato il</th>
-            <th className="pb-2 font-medium">Ultima attività</th>
-          </tr>
-        </thead>
-        <tbody>
-          {players.map((p) => (
-            <tr key={p.id} className="border-b border-surface-border last:border-0">
-              <td className="py-3 pr-4 font-mono text-xs">{p.playerId}</td>
-              <td className="py-3 pr-4">
-                <Badge tone={STATE_TONE[p.lifecycleState]}>{STATE_LABELS[p.lifecycleState]}</Badge>
-                {p.suppressed && (
-                  <Badge tone="warning">
-                    <span className="ml-1">soppresso</span>
-                  </Badge>
-                )}
-              </td>
-              <td className="py-3 pr-4">{formatEur(Number(p.totalDeposits))}</td>
-              <td className="py-3 pr-4">{formatEur(Number(p.totalNgr))}</td>
-              <td className="py-3 pr-4 text-text-muted">{new Date(p.registeredAt).toLocaleDateString("it-IT")}</td>
-              <td className="py-3 text-text-muted">
-                {p.lastActivityAt ? new Date(p.lastActivityAt).toLocaleDateString("it-IT") : "—"}
-              </td>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <input
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setPage(0);
+          }}
+          placeholder="Cerca username o nickname..."
+          className="w-72 bg-surface-base border border-surface-border rounded-md px-3 py-2 text-sm outline-none focus:border-bp-green-light"
+        />
+        <span className="text-xs text-text-muted">
+          {filtered.length.toLocaleString("it-IT")} giocatori
+          {query && ` su ${players.length.toLocaleString("it-IT")}`}
+        </span>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs text-text-muted border-b border-surface-border">
+              <th className="pb-2 pr-4 font-medium">Username</th>
+              <th className="pb-2 pr-4 font-medium">Nickname</th>
+              <th className="pb-2 pr-4 font-medium">Stato</th>
+              <th className="pb-2 pr-4 font-medium">Depositi</th>
+              <th className="pb-2 pr-4 font-medium">GGR</th>
+              <th className="pb-2 pr-4 font-medium">Registrato il</th>
+              <th className="pb-2 font-medium">Ultima attività</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {visible.map((p) => (
+              <tr key={p.id} className="border-b border-surface-border last:border-0">
+                <td className="py-3 pr-4 text-xs font-medium">{p.username ?? <span className="text-text-muted">—</span>}</td>
+                <td className="py-3 pr-4 text-xs text-text-muted">{p.nickname || "—"}</td>
+                <td className="py-3 pr-4">
+                  <div className="flex flex-wrap items-center gap-1">
+                    <Badge tone={STATE_TONE[p.lifecycleState]}>{STATE_LABELS[p.lifecycleState]}</Badge>
+                    {p.selfExcluded && <Badge tone="warning">autoescluso</Badge>}
+                    {p.closed && <Badge tone="warning">chiuso</Badge>}
+                  </div>
+                </td>
+                <td className="py-3 pr-4">{formatEur(Number(p.totalDeposits))}</td>
+                <td className="py-3 pr-4">{formatEur(Number(p.totalNgr))}</td>
+                <td className="py-3 pr-4 text-text-muted">{p.registeredAt ? new Date(p.registeredAt).toLocaleDateString("it-IT") : "—"}</td>
+                <td className="py-3 text-text-muted">
+                  {p.lastActivityAt ? new Date(p.lastActivityAt).toLocaleDateString("it-IT") : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {filtered.length === 0 && <p className="text-sm text-text-muted pt-3">Nessun giocatore corrisponde alla ricerca.</p>}
+      </div>
+
+      {pages > 1 && (
+        <div className="flex items-center justify-end gap-3 text-xs text-text-muted">
+          <button
+            disabled={current === 0}
+            onClick={() => setPage(current - 1)}
+            className="px-2.5 py-1 rounded-md border border-surface-border hover:border-bp-green-light disabled:opacity-40"
+          >
+            Precedente
+          </button>
+          <span>
+            Pagina {current + 1} di {pages}
+          </span>
+          <button
+            disabled={current >= pages - 1}
+            onClick={() => setPage(current + 1)}
+            className="px-2.5 py-1 rounded-md border border-surface-border hover:border-bp-green-light disabled:opacity-40"
+          >
+            Successiva
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -180,8 +242,8 @@ export function Network() {
         <h1 className="text-xl font-semibold">Rete Affiliati</h1>
         <p className="text-sm text-text-muted mt-1">
           {isManagement
-            ? "Per ciascun partner, quanti utenti ha portato e in che stato sono. Nessun dato identificativo del giocatore."
-            : "I giocatori dei partner assegnati al tuo account e il loro stato nel ciclo di vita. Nessun dato identificativo del giocatore."}
+            ? "Per ciascun partner, quanti utenti ha portato e in che stato sono. Dei giocatori sono mostrati solo username e nickname."
+            : "I giocatori dei partner assegnati al tuo account e il loro stato nel ciclo di vita. Dei giocatori sono mostrati solo username e nickname."}
         </p>
       </div>
 

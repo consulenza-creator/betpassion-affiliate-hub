@@ -1,7 +1,12 @@
 // Client API verso il backend NestJS. URL base configurabile via variabile
 // d'ambiente Vite (VITE_API_BASE_URL), cosi' da poter puntare a locale/staging/prod
 // senza toccare il codice.
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
+// Se non e' impostata, in locale si usa il backend locale; online (GitHub Pages) quello su Render.
+const DEFAULT_API_BASE_URL =
+  typeof window !== "undefined" && window.location.hostname !== "localhost"
+    ? "https://betpassion-affiliate-hub-backend.onrender.com"
+    : "http://localhost:3000";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? DEFAULT_API_BASE_URL;
 
 const TOKEN_STORAGE_KEY = "affiliate_hub_token";
 
