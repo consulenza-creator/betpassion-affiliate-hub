@@ -24,7 +24,7 @@ const NAV_ITEMS: { to: string; label: string; icon: typeof LayoutDashboard; admi
   { to: "/network", label: "Rete Affiliati", icon: Network },
   { to: "/reports", label: "Report & Analytics", icon: BarChart3 },
   { to: "/payouts", label: "Pagamenti", icon: FileText },
-  { to: "/team", label: "Gestione Team", icon: Users, adminOnly: true },
+  { to: "/team", label: "Crea Affiliato", icon: Users, adminOnly: true },
   { to: "/deals", label: "Accordi", icon: Percent, adminOnly: true },
   { to: "/data", label: "Dati & Import", icon: Database, adminOnly: true },
   { to: "/notifications", label: "Notifiche", icon: Bell },
