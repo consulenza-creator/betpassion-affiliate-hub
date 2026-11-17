@@ -296,7 +296,7 @@ export function TeamManagement() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold">Gestione Team</h1>
+        <h1 className="text-xl font-semibold">Crea Affiliato</h1>
         <p className="text-sm text-text-muted mt-1">
           Crea gli account e assegna a ciascuno la rete che può vedere, dal singolo PVR alla filiera: puoi
           combinare partner, filiere, agenti e punti vendita. Gli affiliati vedono solo ciò che gli è assegnato;
@@ -389,7 +389,7 @@ export function TeamManagement() {
             disabled={submitting}
             className="bg-bp-green-light text-bp-black font-medium text-sm rounded-md px-4 py-2.5 hover:bg-bp-green-dark transition-colors disabled:opacity-60"
           >
-            {submitting ? "Creazione..." : "Crea account"}
+            {submitting ? "Creazione..." : "Crea affiliato"}
           </button>
         </form>
       </Card>
