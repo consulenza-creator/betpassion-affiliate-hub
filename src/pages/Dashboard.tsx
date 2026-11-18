@@ -69,13 +69,6 @@ export function Dashboard() {
         )}
       </div>
 
-      {summary?.playersUpTo && summary.playersUpTo < summary.period.anchor && (
-        <p className="text-xs text-amber-400">
-          Anagrafica giocatori aggiornata al {formatDay(summary.playersUpTo)}: "Nuovi giocatori" e FTD non includono le
-          registrazioni successive. Depositi, giocato e GGR arrivano fino al {formatDay(summary.period.anchor)}.
-        </p>
-      )}
-
       {error && <p className="text-sm text-red-400">{error}</p>}
 
       {summary && (

@@ -21,11 +21,10 @@ const EMPTY_SELECTION: AccessSelection = { partnerIds: [], filiere: [], agenti: 
 const MAX_VISIBLE = 100;
 
 type TabKey = "partner" | "filiera" | "agente" | "pvr";
+// In creazione si assegnano solo i "Partner" = le sigle (es. bpziogeorge). Le altre dimensioni restano
+// nel modello dati ma non si scelgono da qui.
 const TABS: { key: TabKey; label: string; field: keyof AccessSelection }[] = [
-  { key: "partner", label: "Partner", field: "partnerIds" },
-  { key: "filiera", label: "Filiera", field: "filiere" },
-  { key: "agente", label: "Agente", field: "agenti" },
-  { key: "pvr", label: "PVR", field: "pvr" },
+  { key: "pvr", label: "Partner", field: "pvr" },
 ];
 
 interface PickerItem {
@@ -50,7 +49,7 @@ function AccessPicker({
   value: AccessSelection;
   onChange: (v: AccessSelection) => void;
 }) {
-  const [tab, setTab] = useState<TabKey>("partner");
+  const [tab, setTab] = useState<TabKey>("pvr");
   const [query, setQuery] = useState("");
 
   const items: Record<TabKey, PickerItem[]> = useMemo(
@@ -157,10 +156,10 @@ function AccessPicker({
 // Riepilogo compatto delle voci assegnate a un account
 function AssignmentBadges({ user }: { user: AdminUser }) {
   const groups: { label: string; values: string[] }[] = [
-    { label: "Partner", values: user.partners.map((p) => p.name) },
+    { label: "Gruppo", values: user.partners.map((p) => p.name) },
     { label: "Filiera", values: user.filiere },
     { label: "Agente", values: user.agenti },
-    { label: "PVR", values: user.pvr },
+    { label: "Partner", values: user.pvr },
   ];
   return (
     <>
